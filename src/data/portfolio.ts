@@ -89,6 +89,15 @@ export const projects = [
       "SaaS platform enabling clients to create full profiles and receive NFC cards that redirect to their online profile. Features a homepage, user dashboard, admin dashboard, and profile pages. Facilitates centralized management of client data.",
     tech: ["SaaS", "NFC", "Dashboard", "Full Stack"],
   },
+  {
+    title: "Dynamic Portfolio CMS",
+    duration: "Ongoing",
+    category: "Web / Open Source",
+    description:
+      "A fully customizable, white-label portfolio CMS built with React, TypeScript, and Tailwind CSS. Features a comprehensive admin dashboard for managing projects, experience, skills, and education without code changes. Includes dynamic theming, local persistence, and a responsive modern UI.",
+    tech: ["React", "TypeScript", "Tailwind CSS", "Context API"],
+    repoUrl: "https://github.com/ayouubmzariiii/Portfolio"
+  },
 ];
 
 export const education = [

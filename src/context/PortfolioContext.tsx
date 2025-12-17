@@ -1,5 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { experience as initialExperience, projects as initialProjects, personalInfo as initialPersonalInfo, skills as initialSkills, education as initialEducation } from '@/data/portfolio';
+import { Mail, Phone, Github, MapPin, Globe, Linkedin, Twitter, Facebook, Instagram } from 'lucide-react';
+
+// Icon mapping for rehydration
+const ICON_MAP: Record<string, any> = {
+  'Email': Mail,
+  'Phone': Phone,
+  'GitHub': Github,
+  'Location': MapPin,
+  'LinkedIn': Linkedin,
+  'Website': Globe,
+  'Twitter': Twitter,
+  'Facebook': Facebook,
+  'Instagram': Instagram
+};
 
 // Define types
 export interface Project {
@@ -97,7 +111,20 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // --- STATE ---
   const [projects, setProjects] = useState<Project[]>(() => {
     const saved = localStorage.getItem('portfolio_projects');
-    return saved ? JSON.parse(saved) : normalizeProjects(initialProjects);
+    const baseProjects = saved ? JSON.parse(saved) : normalizeProjects(initialProjects);
+
+    // Migration: Add Portfolio CMS if missing
+    const hasPortfolioCMS = baseProjects.some((p: Project) => p.title.includes('Dynamic Portfolio CMS'));
+    if (!hasPortfolioCMS) {
+       const cmsProject = initialProjects.find(p => p.title.includes('Dynamic Portfolio CMS'));
+       if (cmsProject) {
+         baseProjects.push({
+           ...cmsProject,
+           id: `proj-cms-${Date.now()}`
+         });
+       }
+    }
+    return baseProjects;
   });
 
   const [experience, setExperience] = useState<Experience[]>(() => {
@@ -124,7 +151,23 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [personalInfo, setPersonalInfo] = useState(() => {
     const saved = localStorage.getItem('portfolio_personalInfo');
-    return saved ? JSON.parse(saved) : initialPersonalInfo;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Rehydrate icons
+        if (parsed.socials && Array.isArray(parsed.socials)) {
+          parsed.socials = parsed.socials.map((s: any) => ({
+            ...s,
+            icon: ICON_MAP[s.name] || Mail // Fallback to Mail if icon not found
+          }));
+        }
+        return parsed;
+      } catch (e) {
+        console.error("Failed to parse saved personal info", e);
+        return initialPersonalInfo;
+      }
+    }
+    return initialPersonalInfo;
   });
 
   const [skills, setSkills] = useState(() => {

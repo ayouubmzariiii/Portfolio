@@ -16,8 +16,14 @@ const AdminDashboard = () => {
   // Editing states
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
+  const [editingEducation, setEditingEducation] = useState<any | null>(null);
+  const [editingEducationIndex, setEditingEducationIndex] = useState<number>(-1);
   const [isAddingNew, setIsAddingNew] = useState(false);
   
+  // Skills state
+  const [newSkillCategory, setNewSkillCategory] = useState('');
+  const [newSkillInput, setNewSkillInput] = useState<Record<string, string>>({});
+
   // Local state for profile and theme forms
   const [profileForm, setProfileForm] = useState<PersonalInfo>(personalInfo);
   const [themeForm, setThemeForm] = useState<Theme>(theme);
@@ -37,6 +43,66 @@ const AdminDashboard = () => {
   };
 
   // --- Handlers ---
+
+  // Skills Handlers
+  const handleAddCategory = () => {
+    if (newSkillCategory.trim() && !skills[newSkillCategory]) {
+      updateSkills({ ...skills, [newSkillCategory]: [] });
+      setNewSkillCategory('');
+    }
+  };
+
+  const handleDeleteCategory = (category: string) => {
+    if (confirm(`Are you sure you want to delete the "${category}" category?`)) {
+      const newSkills = { ...skills };
+      delete newSkills[category];
+      updateSkills(newSkills);
+    }
+  };
+
+  const handleAddSkill = (category: string) => {
+    const val = newSkillInput[category];
+    if (val && val.trim()) {
+      updateSkills({
+        ...skills,
+        [category]: [...(skills[category] || []), val.trim()]
+      });
+      setNewSkillInput({ ...newSkillInput, [category]: '' });
+    }
+  };
+
+  const handleDeleteSkill = (category: string, skill: string) => {
+    updateSkills({
+      ...skills,
+      [category]: skills[category].filter(s => s !== skill)
+    });
+  };
+
+  // Education Handlers
+  const handleSaveEducation = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEducation) return;
+
+    const newEducation = [...education];
+    if (isAddingNew) {
+      newEducation.unshift(editingEducation);
+    } else if (editingEducationIndex >= 0) {
+      newEducation[editingEducationIndex] = editingEducation;
+    }
+    
+    updateEducation(newEducation);
+    setEditingEducation(null);
+    setEditingEducationIndex(-1);
+    setIsAddingNew(false);
+  };
+
+  const handleDeleteEducation = (index: number) => {
+    if (confirm('Are you sure you want to delete this education entry?')) {
+      const newEducation = [...education];
+      newEducation.splice(index, 1);
+      updateEducation(newEducation);
+    }
+  };
 
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,6 +207,7 @@ const AdminDashboard = () => {
         setActiveTab(id); 
         setEditingProject(null); 
         setEditingExperience(null); 
+        setEditingEducation(null);
         setIsAddingNew(false);
         // Reset forms to current context state when switching tabs
         setProfileForm(personalInfo);
@@ -437,17 +504,132 @@ const AdminDashboard = () => {
 
         {/* SKILLS TAB */}
         {activeTab === 'skills' && (
-          <div className="text-center py-20 text-white/50">
-            <p>Skills management coming soon in v2.</p>
-            <p className="text-xs mt-2">Currently editable via code or direct JSON manipulation.</p>
+          <div className="space-y-8">
+            {/* Add New Category */}
+            <div className="bg-card border border-white/10 p-4 rounded-xl flex gap-4 items-center">
+               <input 
+                 placeholder="New Skill Category Name" 
+                 value={newSkillCategory}
+                 onChange={(e) => setNewSkillCategory(e.target.value)}
+                 className="flex-1 bg-black/50 border border-white/10 rounded p-3 text-white"
+               />
+               <Button onClick={handleAddCategory} disabled={!newSkillCategory.trim()} variant="primary" className="flex items-center gap-2">
+                 <Plus size={16} /> Add Category
+               </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Object.entries(skills).map(([category, items]) => (
+                <div key={category} className="bg-card border border-white/10 p-6 rounded-xl space-y-4 group hover:border-primary/30 transition-colors">
+                  <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                    <h3 className="text-lg font-bold text-white">{category}</h3>
+                    <button onClick={() => handleDeleteCategory(category)} className="text-red-500 hover:text-red-400 p-2 hover:bg-white/5 rounded-lg transition-colors">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 min-h-[50px]">
+                    {items.map((skill) => (
+                      <div key={skill} className="bg-white/5 border border-white/10 rounded-full px-3 py-1 text-sm text-white flex items-center gap-2 group/skill hover:border-primary/50 transition-colors">
+                        {skill}
+                        <button onClick={() => handleDeleteSkill(category, skill)} className="text-white/30 hover:text-red-500 transition-colors"><X size={12} /></button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <input 
+                      placeholder="Add skill..." 
+                      value={newSkillInput[category] || ''}
+                      onChange={(e) => setNewSkillInput({...newSkillInput, [category]: e.target.value})}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddSkill(category)}
+                      className="flex-1 bg-black/50 border border-white/10 rounded px-3 py-2 text-sm text-white"
+                    />
+                    <Button onClick={() => handleAddSkill(category)} variant="outline" className="px-3">
+                      <Plus size={14} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* EDUCATION TAB */}
         {activeTab === 'education' && (
-          <div className="text-center py-20 text-white/50">
-            <p>Education management coming soon in v2.</p>
-            <p className="text-xs mt-2">Currently editable via code or direct JSON manipulation.</p>
+          <div className="space-y-6">
+            {!editingEducation && (
+              <Button 
+                variant="primary" 
+                onClick={() => {
+                  setEditingEducation({ school: '', period: '', degree: '' });
+                  setIsAddingNew(true);
+                  setEditingEducationIndex(-1);
+                }}
+                className="flex items-center gap-2"
+              >
+                <Plus size={16} /> Add New Education
+              </Button>
+            )}
+
+            {editingEducation ? (
+              <form onSubmit={handleSaveEducation} className="bg-card border border-white/10 p-6 rounded-xl space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm text-secondary">School / Institution</label>
+                    <input 
+                      value={editingEducation.school} 
+                      onChange={e => setEditingEducation({...editingEducation, school: e.target.value})} 
+                      className="bg-black/50 border border-white/10 rounded p-3 text-white w-full" 
+                      required 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm text-secondary">Period</label>
+                    <input 
+                      value={editingEducation.period} 
+                      onChange={e => setEditingEducation({...editingEducation, period: e.target.value})} 
+                      className="bg-black/50 border border-white/10 rounded p-3 text-white w-full" 
+                      required 
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                   <label className="text-sm text-secondary">Degree / Certification</label>
+                   <textarea 
+                     value={editingEducation.degree} 
+                     onChange={e => setEditingEducation({...editingEducation, degree: e.target.value})} 
+                     className="bg-black/50 border border-white/10 rounded p-3 text-white w-full h-24" 
+                     required 
+                   />
+                </div>
+                <div className="flex gap-4 pt-4">
+                  <Button type="submit" variant="primary" className="flex items-center gap-2"><Save size={16} /> Save Education</Button>
+                  <Button type="button" variant="outline" onClick={() => { setEditingEducation(null); setIsAddingNew(false); }} className="flex items-center gap-2"><X size={16} /> Cancel</Button>
+                </div>
+              </form>
+            ) : (
+              <div className="grid gap-4">
+                {education.map((edu, index) => (
+                  <div key={index} className="bg-card border border-white/10 p-4 rounded-xl flex justify-between items-center group hover:border-primary/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-primary border border-white/10">
+                        <GraduationCap size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-bold text-white">{edu.school}</h4>
+                        <p className="text-secondary text-sm">{edu.period}</p>
+                        <p className="text-white/60 text-sm mt-1">{edu.degree}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => { setEditingEducation(edu); setEditingEducationIndex(index); setIsAddingNew(false); }} className="p-2 bg-white/10 hover:bg-primary hover:text-black rounded-lg transition-colors"><Edit2 size={16} /></button>
+                      <button onClick={() => handleDeleteEducation(index)} className="p-2 bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 size={16} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

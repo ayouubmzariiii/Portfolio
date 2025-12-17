@@ -20,8 +20,8 @@ Originally designed as a personal portfolio, this project has been evolved into 
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/your-portfolio.git
-    cd your-portfolio
+    git clone https://github.com/ayouubmzariiii/Portfolio
+    cd Portfolio
     ```
 
 2.  **Install dependencies**
