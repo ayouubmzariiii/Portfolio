@@ -1,17 +1,17 @@
 import { useState, useRef } from 'react';
 import { usePortfolio, Project, Experience, Theme, PersonalInfo } from '@/context/PortfolioContext';
 import { Button } from '@/components/ui/Button';
-import { Plus, Trash2, Edit2, Save, X, LogOut, Upload, Image as ImageIcon, Video, FileText, User, Settings, Code, GraduationCap } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, X, LogOut, Upload, Image as ImageIcon, Video, FileText, User, Settings, Code, GraduationCap, Lock } from 'lucide-react';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 const AdminDashboard = () => {
   const { 
     projects, experience, personalInfo, skills, education, theme,
-    updateProjects, updateExperience, updatePersonalInfo, updateSkills, updateEducation, updateTheme, updateResume, 
+    updateProjects, updateExperience, updatePersonalInfo, updateSkills, updateEducation, updateTheme, updateResume, updatePassword,
     logout, resumeUrl 
   } = usePortfolio();
   
-  const [activeTab, setActiveTab] = useState<'profile' | 'projects' | 'experience' | 'skills' | 'education' | 'resume' | 'theme'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'projects' | 'experience' | 'skills' | 'education' | 'resume' | 'theme' | 'settings'>('profile');
   
   // Editing states
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -27,6 +27,7 @@ const AdminDashboard = () => {
   // Local state for profile and theme forms
   const [profileForm, setProfileForm] = useState<PersonalInfo>(personalInfo);
   const [themeForm, setThemeForm] = useState<Theme>(theme);
+  const [passwordForm, setPasswordForm] = useState({ new: '', confirm: '' });
 
   // File input refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -114,6 +115,21 @@ const AdminDashboard = () => {
     e.preventDefault();
     updateTheme(themeForm);
     alert('Theme updated successfully!');
+  };
+
+  const handlePasswordChange = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordForm.new.length < 4) {
+      alert('Password must be at least 4 characters long.');
+      return;
+    }
+    if (passwordForm.new !== passwordForm.confirm) {
+      alert('Passwords do not match!');
+      return;
+    }
+    updatePassword(passwordForm.new);
+    setPasswordForm({ new: '', confirm: '' });
+    alert('Password updated successfully! Please login with your new password next time.');
   };
 
   const handleSaveProject = (e: React.FormEvent) => {
@@ -212,6 +228,7 @@ const AdminDashboard = () => {
         // Reset forms to current context state when switching tabs
         setProfileForm(personalInfo);
         setThemeForm(theme);
+        setPasswordForm({ new: '', confirm: '' });
       }}
       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
         activeTab === id 
@@ -242,6 +259,7 @@ const AdminDashboard = () => {
         <TabButton id="education" icon={GraduationCap} label="Education" />
         <TabButton id="resume" icon={FileText} label="Resume" />
         <TabButton id="theme" icon={Settings} label="Theme" />
+        <TabButton id="settings" icon={Lock} label="Settings" />
       </div>
 
       <div className="bg-card/50 border border-white/5 rounded-2xl p-6 min-h-[500px]">
@@ -711,6 +729,47 @@ const AdminDashboard = () => {
                  setThemeForm({ primary: '#CCFF00', background: '#050505', card: '#1A1A1A', secondary: '#888888' });
                }} className="w-full">Reset to Default</Button>
             </div>
+          </form>
+        )}
+
+        {/* SETTINGS TAB */}
+        {activeTab === 'settings' && (
+          <form onSubmit={handlePasswordChange} className="space-y-6 max-w-xl mx-auto mt-10">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto text-primary border border-white/10 mb-4">
+                <Lock size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-white">Security Settings</h3>
+              <p className="text-secondary text-sm mt-2">Update your admin access password</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm text-secondary">New Password</label>
+                <input 
+                  type="password"
+                  value={passwordForm.new}
+                  onChange={e => setPasswordForm({...passwordForm, new: e.target.value})}
+                  className="w-full bg-black/50 border border-white/10 rounded p-3 text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+                  placeholder="Enter new password"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-secondary">Confirm Password</label>
+                <input 
+                  type="password"
+                  value={passwordForm.confirm}
+                  onChange={e => setPasswordForm({...passwordForm, confirm: e.target.value})}
+                  className="w-full bg-black/50 border border-white/10 rounded p-3 text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+                  placeholder="Confirm new password"
+                  required
+                />
+              </div>
+            </div>
+
+            <Button type="submit" variant="primary" className="w-full py-3 mt-4">Update Password</Button>
           </form>
         )}
 

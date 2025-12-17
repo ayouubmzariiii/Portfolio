@@ -75,6 +75,7 @@ interface PortfolioContextType {
   updateSkills: (skills: typeof initialSkills) => void;
   updateEducation: (education: typeof initialEducation) => void;
   updateTheme: (theme: Theme) => void;
+  updatePassword: (password: string) => void;
   
   isAuthenticated: boolean;
   login: (password: string) => boolean;
@@ -189,6 +190,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return localStorage.getItem('portfolio_resume') || '/resume.pdf';
   });
 
+  const [password, setPassword] = useState(() => {
+    return localStorage.getItem('portfolio_password') || 'admin123';
+  });
+
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('portfolio_auth') === 'true';
   });
@@ -200,6 +205,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => { localStorage.setItem('portfolio_skills', JSON.stringify(skills)); }, [skills]);
   useEffect(() => { localStorage.setItem('portfolio_education', JSON.stringify(education)); }, [education]);
   useEffect(() => { localStorage.setItem('portfolio_resume', resumeUrl); }, [resumeUrl]);
+  useEffect(() => { localStorage.setItem('portfolio_password', password); }, [password]);
   
   // Theme Effect
   useEffect(() => {
@@ -219,9 +225,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const updateEducation = (newEducation: typeof initialEducation) => setEducation(newEducation);
   const updateTheme = (newTheme: Theme) => setTheme(newTheme);
   const updateResume = (url: string) => setResumeUrl(url);
+  const updatePassword = (newPassword: string) => setPassword(newPassword);
 
-  const login = (password: string) => {
-    if (password === 'admin123') {
+  const login = (inputPassword: string) => {
+    if (inputPassword === password) {
       setIsAuthenticated(true);
       localStorage.setItem('portfolio_auth', 'true');
       return true;
@@ -251,6 +258,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         updateEducation,
         updateTheme,
         updateResume,
+        updatePassword,
         isAuthenticated,
         login,
         logout,
