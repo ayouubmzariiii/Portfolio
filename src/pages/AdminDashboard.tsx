@@ -266,7 +266,7 @@ const AdminDashboard = () => {
         
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
-          <form onSubmit={handleProfileSave} className="space-y-6 max-w-2xl">
+          <form onSubmit={handleProfileSave} className="space-y-6">
             <h3 className="text-xl font-bold text-white mb-4">Personal Information</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -311,11 +311,14 @@ const AdminDashboard = () => {
                 />
               </div>
 
-              <h4 className="font-bold text-white mt-4">Social Links</h4>
-              <div className="space-y-3">
-                {profileForm.socials.map((social, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <span className="w-24 text-sm text-secondary">{social.name}</span>
+              <h4 className="font-bold text-white mt-4">Social Profiles</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {profileForm.socials
+                  .map((social, index) => ({ social, index }))
+                  .filter(({ social }) => !['Email', 'Phone', 'Location'].includes(social.name))
+                  .map(({ social, index }) => (
+                  <div key={index} className="space-y-2">
+                    <label className="text-sm text-secondary">{social.name}</label>
                     <input 
                       placeholder={`${social.name} URL`}
                       value={social.href}
@@ -324,8 +327,7 @@ const AdminDashboard = () => {
                         newSocials[index] = { ...social, href: e.target.value };
                         setProfileForm({ ...profileForm, socials: newSocials });
                       }}
-                      className="flex-1 bg-black/50 border border-white/10 rounded p-2 text-white text-sm"
-                      disabled={social.name === 'Email' || social.name === 'Phone' || social.name === 'Location'}
+                      className="w-full bg-black/50 border border-white/10 rounded p-3 text-white"
                     />
                   </div>
                 ))}
