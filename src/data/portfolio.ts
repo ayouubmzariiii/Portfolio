@@ -25,6 +25,11 @@ export const personalInfo = {
       href: "https://github.com/ayouubmzariiii",
     },
     {
+      name: "LinkedIn",
+      icon: Linkedin,
+      href: "https://www.linkedin.com/in/ayoub-mzari/",
+    },
+    {
       name: "Location",
       icon: MapPin,
       href: "#",

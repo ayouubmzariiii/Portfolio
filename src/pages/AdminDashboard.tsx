@@ -310,6 +310,26 @@ const AdminDashboard = () => {
                   className="w-full bg-black/50 border border-white/10 rounded p-3 text-white"
                 />
               </div>
+
+              <h4 className="font-bold text-white mt-4">Social Links</h4>
+              <div className="space-y-3">
+                {profileForm.socials.map((social, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <span className="w-24 text-sm text-secondary">{social.name}</span>
+                    <input 
+                      placeholder={`${social.name} URL`}
+                      value={social.href}
+                      onChange={e => {
+                        const newSocials = [...profileForm.socials];
+                        newSocials[index] = { ...social, href: e.target.value };
+                        setProfileForm({ ...profileForm, socials: newSocials });
+                      }}
+                      className="flex-1 bg-black/50 border border-white/10 rounded p-2 text-white text-sm"
+                      disabled={social.name === 'Email' || social.name === 'Phone' || social.name === 'Location'}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             <Button type="submit" variant="primary" className="mt-4">Save Profile</Button>

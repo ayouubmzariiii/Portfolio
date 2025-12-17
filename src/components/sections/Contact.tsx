@@ -33,7 +33,9 @@ export function Contact() {
             </p>
 
             <div className="space-y-4">
-              {personalInfo.socials.map((item) => (
+              {personalInfo.socials
+                .filter(item => item.name !== 'GitHub' && item.name !== 'LinkedIn')
+                .map((item) => (
                 <motion.div
                   key={item.name}
                   whileHover={{ x: 5 }}
@@ -51,13 +53,13 @@ export function Contact() {
                             ? personalInfo.contact.email 
                             : item.name === 'Phone' 
                               ? personalInfo.contact.phone 
-                              : item.name === 'GitHub'
+                              : (item.name === 'GitHub' || item.name === 'LinkedIn')
                                 ? personalInfo.name
                                 : personalInfo.contact.location}
                         </p>
                       </div>
                     </div>
-                    {item.name !== 'GitHub' && item.href !== '#' && (
+                    {item.name !== 'GitHub' && item.name !== 'LinkedIn' && item.href !== '#' && (
                         <button 
                           className="text-white/30 hover:text-white transition-colors"
                           onClick={(e) => {
