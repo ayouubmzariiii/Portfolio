@@ -191,10 +191,25 @@ const AdminDashboard = () => {
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const base64 = await convertToBase64(file);
-      updateResume(base64);
-      alert('Resume updated successfully!');
+      
+      if (file.size > 3 * 1024 * 1024) { // 3MB limit
+        alert('File is too large! Local storage has a limit. Please use a file smaller than 3MB or provide a direct URL.');
+        return;
+      }
+
+      try {
+        const base64 = await convertToBase64(file);
+        updateResume(base64);
+        alert('Resume updated successfully!');
+      } catch (error) {
+        console.error('Error converting file:', error);
+        alert('Failed to process file.');
+      }
     }
+  };
+
+  const handleResumeUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateResume(e.target.value);
   };
 
   const handleSaveExperience = (e: React.FormEvent) => {
